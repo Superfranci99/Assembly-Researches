@@ -17,8 +17,8 @@ storeEncryptedData:
 	LDR     R0, [R0]                        ; get the block index (0,1,2,3)
 	MOV     R5, R2
 	ADD     R4, R3, R0,LSL#7                ; get the offset where the data will be stored (due to the block index)
-                                            ; there are 4 slots (128 bytes each)
-                                            ; when all the slots are full, it overrides them from the first
+	                                        ; there are 4 slots (128 bytes each)
+	                                        ; when all the slots are full, it overrides them from the first
 	MOV     R0, R1
 	MOV     R1, R4                          ; R1 is the offset where the data block will be stored
 	MOV     R7, R6
@@ -39,3 +39,23 @@ calculateXor:
 	CMP     R5, #0
 	MOV     R1, #0                          ; reset the counter
 	BLS     loc_2074954                     ; if block size in not valid, exit
+	B       shifting
+	
+	
+shifing:
+	LDRB    R2, [R4,R1]                     ; load the value to modify with logical operations and shifting bits
+	MOV     R3, R7                          ; ... R1 counter
+	B       doOperations                    ; do the shifting operations
+	STRB    R2, [R4,R1]                     ; store the modified value
+	ADD     R1, R1, #1                      ; R1 is the counter
+	CMP     R1, R5                          ; when the cycle is finished, exit from the cycle
+	BCC     shifing
+	
+
+doOperations:
+	MOV     R0, R2,LSL#7                    ; R0 = R2 << 7
+	ORR     R0, R0, R2,ASR#1                ; R0 |= R2 >> 1
+	ADD     R3, R3, #1                      ; R3 = R3 + 1
+	CMP     R3, #2                          ; repeats the cycle two times
+	AND     R2, R0, #0xFF                   ; R2 = R0 & 0xFF
+	BLT     doOperations

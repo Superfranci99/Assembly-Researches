@@ -1,4 +1,5 @@
 ;; Purpose: decrypt item.dat
+;; code starts at 0x020714D8
 
 getBlockPointer:
 	LDR     R1, [SP]                        ; R1=offset of the file in the memory
